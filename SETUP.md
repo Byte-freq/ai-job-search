@@ -12,7 +12,7 @@ Install Claude Code (Anthropic's CLI for Claude):
 npm install -g @anthropic-ai/claude-code
 ```
 
-You'll need an Anthropic API key or a Claude Pro/Team subscription. See the [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for details.
+For local inference, follow the [llama.cpp guide](LLAMA_CPP.md). For hosted inference, sign in with a Claude subscription or use an Anthropic API key. See the [Claude Code docs](https://code.claude.com/docs/en/setup) for installation details.
 
 ### Python
 
@@ -165,24 +165,17 @@ If a command still uses `pdftotext -layout`, it must pass `-enc UTF-8` as well. 
 
 ## 2. Fork and clone
 
+Copy this repository's clone URL from its **Code** menu:
+
 ```bash
-gh repo fork ai-job-search-dev/ai-job-search --clone
+git clone YOUR_FORK_URL ai-job-search
 cd ai-job-search
-gh repo set-default <your-github-username>/ai-job-search
 ```
 
-Or manually: fork on GitHub, then clone your fork.
-
-> **The `set-default` line is not optional.** `gh repo fork --clone` sets the
-> **upstream** repo as gh's default repository ("The `upstream` remote will be set as
-> the default remote repository" — `gh repo fork --help`), and gh uses the default for
-> **creating issues and PRs**. Without it, any later `gh issue create` run from this
-> clone — by you or by an agent you have asked to track your applications — silently
-> files on the upstream **public** tracker, publishing whatever the issue contains
-> under your GitHub identity, on a repo where you cannot delete it (#389).
+If you instead use `gh repo fork --clone` to create and clone your own fork, run `gh repo set-default YOUR_GITHUB_USERNAME/ai-job-search` afterward. GitHub CLI otherwise defaults to the upstream repository for new issues and pull requests.
 
 > **Before you go further: forks are public.** GitHub cannot make a fork of a public
-> repository private, and `/setup` (section 6) writes your personal data into **tracked**
+> repository private, and `/setup` writes your personal data into **tracked**
 > files — pushing those commits to a fork publishes them. If this copy is for your own
 > job search rather than for contributing, prefer a **private repository** with this repo
 > as `upstream`: see section 8, step 1 for the exact commands and why committing your
@@ -204,7 +197,13 @@ If you're outside Denmark, you can generate an equivalent search skill for your 
 
 ## 4. Run the setup interview
 
-Start Claude Code in the repository:
+For local inference, start `llama-server` and run the launcher from the repository root:
+
+```bash
+python3 tools/llama_cpp.py
+```
+
+For hosted inference, start Claude Code with:
 
 ```bash
 claude
@@ -307,11 +306,18 @@ Upstream keeps improving the methodology files your fork has personalized, so pl
 
 **Prefer releases over raw `master`.** Tagged [releases](../../releases) are weekly checkpoints of `master` that passed CI, each listing the PRs it contains on its release page ([CHANGELOG.md](CHANGELOG.md) covers releases up to 1.7.4). Updating to a tag pulls a stable, documented state instead of whatever `master` happens to be mid-review. Fetch tags with `git fetch upstream --tags` and merge a release (for example `git merge v1.0.0`) when you want stability; pull `master` directly only when you specifically want the latest unreleased changes. The steps below apply either way - substitute the release tag for `upstream/master` where you see it.
 
-1. **Commit your personalization - but know where those commits land.** `/setup` edits CLAUDE.md and the profile skill files in place; those edits are *yours*, and committing them is what lets updates merge cleanly. But a GitHub **fork of this repo is public** - forks of public repositories cannot be made private - so anything you commit *and push to a fork* is visible to anyone. If you want your profile in a remote at all, don't push it to a fork: create a **private** repository, push there, and add this repo as the `upstream` remote (`git remote add upstream https://github.com/ai-job-search-dev/ai-job-search.git`) to keep receiving updates. Committing locally without pushing is also fine. The genuinely sensitive files (tracker, salary data, `documents/`, application archives) are gitignored and never enter git either way. An uncommitted working tree is the most common reason `git pull` refuses to merge at all (`Your local changes ... would be overwritten`).
+1. **Keep your personalization local or use a private remote.** `/setup` edits `CLAUDE.md` and the profile skill files in place. Commit those edits locally so framework updates can merge around them. Anything you push to a public fork is visible to anyone. To back up your profile remotely after cloning the llama.cpp fork directly as in section 2, create a private repository, keep the llama.cpp fork as the update source, and push to the private repository:
+
+   ```bash
+   git remote rename origin upstream &&
+   git remote add origin YOUR_PRIVATE_REPO_URL &&
+   git push -u origin HEAD
+   ```
+
+   The tracker, salary data, `documents/`, and application archives are gitignored. The profile files are tracked.
 2. **Preview what changed before pulling:**
    ```bash
-   git remote add upstream https://github.com/ai-job-search-dev/ai-job-search.git   # first time only, if you cloned your own fork
-   git fetch upstream    # or origin, if you cloned the template directly
+   git fetch upstream    # or origin, if you cloned the llama.cpp fork directly
    python3 tools/check_upstream_updates.py
    ```
    It compares the `framework_version` markers in your framework files against upstream and lists exactly which methodology files changed, with the diff command for each.

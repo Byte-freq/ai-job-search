@@ -16,8 +16,8 @@
 
 <p align="center">
   An AI-powered job application framework built on <a href="https://claude.com/claude-code">Claude Code</a>.<br>
-  Fork it, fill in your profile, and let Claude evaluate job postings, tailor your CV,<br>
-  write cover letters, and prepare you for interviews.
+  Run it with a local llama.cpp model or hosted Claude to evaluate job postings,<br>
+  tailor your CV, write cover letters, and prepare for interviews.
 </p>
 
 <p align="center">
@@ -80,7 +80,7 @@ The framework encodes career guidance best practices, including structured evalu
 
 | | |
 |---|---|
-| **[Claude Code](https://claude.com/claude-code)** | The CLI. No free tier: a Claude Pro/Max/Team subscription or Anthropic API credits (pay-per-token, usually cheaper for occasional use). |
+| **[Claude Code](https://claude.com/claude-code)** | Runs the workflow and its tools. Choose [local llama.cpp](LLAMA_CPP.md) for inference on your own hardware, or use a Claude subscription or Anthropic API credits for hosted inference. |
 | **Python 3.10+** | For the tools in `tools/`. |
 | **[Bun](https://bun.sh)** | Runs the job search CLI tools. |
 | **LaTeX** | A distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/), [MacTeX](https://tug.org/mactex/), [TinyTeX](https://yihui.org/tinytex/), or [MiKTeX](https://miktex.org/). |
@@ -98,9 +98,11 @@ The framework encodes career guidance best practices, including structured evalu
 ### 1. Fork and clone
 
 ```bash
-gh repo fork ai-job-search-dev/ai-job-search --clone
+git clone YOUR_FORK_URL ai-job-search
 cd ai-job-search
 ```
+
+Replace `YOUR_FORK_URL` with the clone URL from this repository's **Code** menu. To make your own public fork, use **Fork** on GitHub or `gh repo fork YOUR_FORK_URL --clone`.
 
 > [!IMPORTANT]
 > **A fork of this repo is always public** — GitHub does not allow private forks of
@@ -128,9 +130,18 @@ For `linkedin-search` and `freehire-search` the install is optional: both have z
 
 ### 3. Set up your profile
 
+For local inference, start `llama-server` with a tool-capable GGUF and `--jinja`. Then run this from the repository root:
+
 ```bash
-claude
-# Then inside Claude Code:
+python3 tools/llama_cpp.py --check
+python3 tools/llama_cpp.py
+```
+
+The launcher defaults to `http://127.0.0.1:8080` and discovers the model on a single-model server. See [llama.cpp setup](LLAMA_CPP.md) for server startup, model selection, and the workflow's network and PDF requirements.
+
+For hosted Claude, start the CLI with `claude`. In either session, enter:
+
+```bash
 /setup
 ```
 
@@ -211,7 +222,7 @@ The `/apply` command runs a **drafter-reviewer workflow** with mandatory PDF com
 3. **Draft** a tailored CV and cover letter in LaTeX
 4. **Spawn a reviewer agent** that researches the company and critiques the drafts
 5. **Revise** based on the reviewer's feedback
-6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. Claude reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
+6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. The workflow checks page count and layout. With a text-only model, you complete the visual checks in a PDF viewer.
 7. **ATS-check the CV**: extract the PDF's text layer (`pdftotext`, optional dependency) and verify it the way an ATS parser sees it — contact details present as literal text, no garbled glyphs, sane reading order — then score the posting's keyword coverage against the extraction. Keywords the profile genuinely supports get added; genuine gaps stay visible, never stuffed.
 8. **Present** the final output with a verification checklist
 
