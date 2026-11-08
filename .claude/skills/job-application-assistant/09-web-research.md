@@ -74,7 +74,9 @@ Try these in order and stop at the first that yields real content:
 2. **`WebFetch`** on the target URL (for non-portal URLs, or if the portal CLI is missing or failed). Cheapest for general web pages, returns clean markdown.
 3. **`python3 tools/fetch_page.py '<URL>' --out "$SCRATCHPAD/page.html" --text`** (above). It checks `robots.txt` on every hop, retries with browser headers and strips the tags. Fixes the 403 class of failure. An exit of `1` means the starting URL or a redirect target is disallowed for `*` or `Claude-User`: go to step 4.
 4. **`WebSearch`** for the company or role by name, to find an alternative canonical URL: the employer's own careers portal is almost always richer than the aggregator that surfaced the posting, and it carries the reference ID and grade that aggregators drop.
-5. **Declare it genuinely unavailable** only after 1 to 4 have failed. In `/rank` that means marking the entry `unreachable`, which later runs retry (`expired` is only for a posting shown to be closed - see `rank.md` Step 2); in `/apply` it means telling the user the posting could not be retrieved and stopping rather than drafting from the title.
+5. **Declare it genuinely unavailable** only after every available method in steps 1 to 4 has failed. In `/rank` that means marking the entry `unreachable`, which later runs retry (`expired` is only for a posting shown to be closed - see `rank.md` Step 2); in `/apply` it means telling the user the posting could not be retrieved and stopping rather than drafting from the title.
+
+If the runtime has no `WebFetch`, continue to the repository fetch helper in step 3. If it has no `WebSearch`, report that limitation after trying the available fetch methods. Ask the user for the posting text or an employer URL if needed. Omit company claims that cannot be independently verified.
 
 ### Login walls are a different failure
 
