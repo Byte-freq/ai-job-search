@@ -78,6 +78,8 @@ If a CLI tool exits with a non-zero code, log the error message and continue —
 
 #### 1c. WebSearch fallback
 
+If the runtime has no `WebSearch`, report that the fallback was unavailable and continue with the installed portal CLI results. If no portal succeeded, ask for a posting URL or pasted posting text for `/apply`.
+
 Use `WebSearch` for:
 - Portals listed in `search-queries.md` that do **not** have a corresponding directory under `.agents/skills/`
 - Any portal whose CLI fails at runtime
